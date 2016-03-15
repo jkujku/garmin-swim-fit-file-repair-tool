@@ -4,7 +4,7 @@ var viewer = require("./viewer");
 var repair = require("./repair");
 var util = require("./util");
 
-var filename = "./data/2016-02-21-5000/1058556634.csv";
+var filename = "./../data/2016-02-21-5000/1058556634.csv";
 
 
 var main = function(){
@@ -26,10 +26,10 @@ var main = function(){
 		
 		// rewrite overall data
 		viewer.laps(util.laps(repaired));
-		//viewer.sessions(util.sessions(repaired));
+		viewer.sessions(util.sessions(repaired));
 		repaired = repair.recalculate(repaired);
 		viewer.laps(util.laps(repaired));
-		//viewer.sessions(util.sessions(repaired));
+		viewer.sessions(util.sessions(repaired));
 		
 		impex.write_to_file(filename, repaired);
 		

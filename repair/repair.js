@@ -7,59 +7,47 @@ var guess = function(lengths){
 
 var recalculate = function(data){
 	var result = R.clone(data);
-	var tobechanged = R.filter(n => true, result);
-	R.forEach(function(item){
-		item = {"hello":"world"};
-		console.log(item);
-	}, tobechanged);
-
-	return result;
-}
-
-var recalculate_lap = function(lap, data){
-	var start_time = u.pint(lap["Value 3"]);
-	var end_time = u.pint(lap["Value 2"]);
-	var lengths = R.filter(n => n["Value 3"] >= start_time && n["Value 2"] <= end_time, u.lengths(data));
-	var count = lengths.length; 
-	var new_lap = R.clone(lap);
-	
-	// total distance
-	new_lap["Value 6"] = count * 50;
-	// avg_speed
-	new_lap["Value 10"] = R.sum(R.map(n => u.pfloat(n["Value 7"]), lengths)) / count; 
-	// max_speed
-	new_lap["Value 11"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 7"]), lengths)); 
-	// num_lengths
-	new_lap["Value 12"] = count; 
-	// avg_stroke_distance
-	new_lap["Value 14"] = new_lap["Value 6"] / new_lap["Value 7"];
-	// num_active_lengths
-	new_lap["Value 15"] = new_lap["Value 12"];
-	// max_cadence
-	new_lap["Value 22"] = R.reduce(R.max, 0, R.map(n => u.pint(n["Value 11"]), lengths)); 
-	// enhanced_avg_speed
-	new_lap["Value 27"] = new_lap["Value 10"];
-	// enhanced_max_speed
-	new_lap["Value 28"] = new_lap["Value 11"];
-	
-	return new_lap;
-}
-
-var recalculate_session = function(data){
-	var lengths = u.lengths(data);
-	var count = lengths.length; 
-	var result = R.clone(data);
 	var laps = u.laps(result);
+	R.forEach(function(lap){
+		var start_time = u.pint(lap["Value 3"]);
+		var end_time = u.pint(lap["Value 2"]);
+		var lengths = R.filter(n => n["Value 3"] >= start_time && n["Value 2"] <= end_time, u.lengths(result));
+		var count = lengths.length; 
+		// total distance
+		lap["Value 6"] = count * 50;
+		// avg_speed
+		lap["Value 10"] = R.sum(R.map(n => u.pfloat(n["Value 7"]), lengths)) / count; 
+		// max_speed
+		lap["Value 11"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 7"]), lengths)); 
+		// num_lengths
+		lap["Value 12"] = count; 
+		// avg_stroke_distance
+		lap["Value 14"] = lap["Value 6"] / lap["Value 7"];
+		// num_active_lengths
+		lap["Value 15"] = lap["Value 12"];
+		// max_cadence
+		lap["Value 22"] = R.reduce(R.max, 0, R.map(n => u.pint(n["Value 11"]), lengths)); 
+		// enhanced_avg_speed
+		lap["Value 27"] = lap["Value 10"];
+		// enhanced_max_speed
+		lap["Value 28"] = lap["Value 11"];
+
+	}, laps);
+	
+	var lengths = u.lengths(result);
+	var count = lengths.length; 
 	var session = u.sessions(result)[0];
 	
 	// total_distance
 	session["Value 6"] = R.sum(R.map(n => u.pint(n["Value 6"]), laps));
-	// avg_speed
-	session["Value 10"] = session["Value 6"] / u.pint(session["Value 4"]);
+	// TODO avg_speed
+	session["Value 10"] = R.sum(R.map(n => u.pfloat(n["Value 4"]), laps)) / u.pint(session["Value 6"]);
 	// max_speed
 	session["Value 11"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 11"]), laps));
 	// hi18n33 (number of length)
 	session["Value 14"] = R.sum(R.map(n => u.pint(n["Value 12"]), laps));
+	// TODO hi18n80 (swolf)
+	session["Value 18"] = Math.round((session["Value 4"] + session["Value 7"]) / session["Value 14"]);
 	// max_cadence
 	session["Value 24"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 22"]), laps));
 	// enhanced_avg_speed
@@ -69,7 +57,6 @@ var recalculate_session = function(data){
 	
 	return result;
 }
-
 
 var merge = function(first, last, data){
 	var meters = function(index, offset){ return (u.pint(index) + (offset || 0) + 1) * 50; }; 

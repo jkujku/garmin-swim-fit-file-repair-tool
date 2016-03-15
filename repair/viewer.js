@@ -13,7 +13,7 @@ var laps = function(laps){
 	print_props(['Value 1', 'Value 2','Value 3', 'Value 6', 'Value 7', 'Value 10', 'Value 11', 'Value 12', 'Value 14', 'Value 15', 'Value 22', 'Value 27', 'Value 28'], laps);
 };
 var sessions = function(sessions){
-	print_props(['Value 1', 'Value 6', 'Value 10', 'Value 11', 'Value 14', 'Value 24', 'Value 29', 'Value 30'], sessions);
+	print_props(['Value 1', 'Value 6', 'Value 10', 'Value 11', 'Value 14', 'Value 18', 'Value 24', 'Value 29', 'Value 30'], sessions);
 };
 var print_props = function(props, lines){
 	console.log("----");
