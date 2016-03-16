@@ -38,16 +38,18 @@ var recalculate = function(data){
 	var count = lengths.length; 
 	var session = u.sessions(result)[0];
 	
+	// time elapsed active
+	var time_active = R.sum(R.map(n => u.pfloat(n["Value 4"]), laps));
 	// total_distance
 	session["Value 6"] = R.sum(R.map(n => u.pint(n["Value 6"]), laps));
-	// TODO avg_speed
-	session["Value 10"] = R.sum(R.map(n => u.pfloat(n["Value 4"]), laps)) / u.pint(session["Value 6"]);
+	// avg_speed
+	session["Value 10"] = u.pint(session["Value 6"]) / time_active;
 	// max_speed
 	session["Value 11"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 11"]), laps));
 	// hi18n33 (number of length)
 	session["Value 14"] = R.sum(R.map(n => u.pint(n["Value 12"]), laps));
-	// TODO hi18n80 (swolf)
-	session["Value 18"] = Math.round((session["Value 4"] + session["Value 7"]) / session["Value 14"]);
+	// hi18n80 (swolf)
+	session["Value 18"] = Math.round(( time_active + u.pint(session["Value 7"])) / session["Value 14"]);
 	// max_cadence
 	session["Value 24"] = R.reduce(R.max, 0, R.map(n => u.pfloat(n["Value 22"]), laps));
 	// enhanced_avg_speed

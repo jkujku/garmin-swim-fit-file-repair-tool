@@ -16,11 +16,11 @@ var main = function(){
 		//viewer.lengthtimes(repair.guess(lengths));
 		
 		// merge lap data
-		//viewer.lengths(util.lengths(repaired));
+		viewer.lengths(util.lengths(repaired));
 		//viewer.lengths(util.breaks(repaired));
 		//viewer.records(util.records(repaired));
 		repaired = repair.merge("45", "46", repaired);
-		//viewer.lengths(util.lengths(repaired));
+		viewer.lengths(util.lengths(repaired));
 		//viewer.lengths(util.breaks(repaired));
 		//viewer.records(util.records(repaired));
 		
