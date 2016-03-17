@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: build.xml 276 2007-04-04 09:07:33Z mnementh $ -->
+<project name="fitcsvconverter">
+
+	<description>Fit CSV Converter</description>
+
+	<!-- standard-properties -->
+	<property name="java.source" value="1.7" />
+	<property name="start" value="" />
+	<property name="project.version" value="-0.0.0" />
+	<property name="encoding" value="UTF-8" />
+
+	<!-- directories -->
+	<property name="dir.inc" value="inc" />
+	<property name="dir.inc.dist" value="${dir.inc}/dist" />
+	<property name="dir.inc.jar" value="${dir.inc}/jar" />
+	<property name="dir.inc.web" value="${dir.inc}/web" />
+	<property name="file.webxml" value="${dir.inc.web}/WEB-INF/web.xml" />
+	<property name="dir.lib" value="lib" />
+	<property name="dir.lib.ant" value="${dir.lib}/ant" />
+	<property name="dir.lib.std" value="${dir.lib}/std" />
+	<property name="dir.src" value="src" />
+	<property name="dir.src.garmin" value="garmin-src" />
+	<property name="dir.tmp" value="generated" />
+	<property name="dir.classpath" value="${dir.tmp}/classpath" />
+	<property name="dir.dependcache" value="${dir.tmp}/dependcache" />
+	<property name="dir.flatlibs" value="${dir.tmp}/flatlibs" />
+	<property name="dir.build" value="${dir.tmp}/build" />
+	<property name="dir.build.std" value="${dir.build}/std" />
+	<property name="dir.dist" value="${dir.tmp}/dist" />
+	<property name="file.webdist" value="${dir.dist}/${ant.project.name}.war" />
+	<property name="file.jardist" value="${dir.build}/${ant.project.name}.jar"/>
+
+	<target name="compile" depends="create.macro.javac" description="compile">
+		<mkdir dir="${dir.lib.std}" />
+		<macro.javac src="${dir.src}" dest="${dir.build.std}" classpathref="classpath.compile.std" debug="on" />
+		<macro.javac src="${dir.src.garmin}" dest="${dir.build.std}" classpathref="classpath.compile.std" debug="on" />
+	</target>
+
+	<target name="create.macro.javac" depends="taskdef.scala">
+		<macrodef name="macro.javac">
+			<attribute name="src" default="${dir.src}" />
+			<attribute name="dest" default="${dir.build.std}" />
+			<attribute name="classpathref" default="classpath.compile.std" />
+			<attribute name="debug" default="on" />
+			<attribute name="listfiles" default="yes" />
+			<sequential>
+				<mkdir dir="@{src}" />
+				<mkdir dir="@{dest}" />
+				<depend srcdir="@{src}" destdir="@{dest}" cache="${dir.dependcache}" closure="true" dump="true" />
+				<condition property="optimize" value="off">
+					<istrue value="@{debug}" />
+				</condition>
+				<condition property="optimize" value="on">
+					<isfalse value="@{debug}" />
+				</condition>
+				<javac srcdir="@{src}" destdir="@{dest}" classpathref="@{classpathref}" encoding="${encoding}" debug="@{debug}" deprecation="@{debug}" optimize="${optimize}" source="${java.source}" target="${java.source}" listfiles="@{listfiles}" includeAntRuntime="false" tempdir="${dir.tmp}">
+					<compilerarg value="-Xlint:all" compiler="javac1.6" />
+					<compilerarg value="-Xlint:all" compiler="javac1.5" />
+					<compilerarg value="-Xswitchcheck" compiler="javac1.4" />
+				</javac>
+				<scalac srcdir="@{src}" destdir="@{dest}" encoding="${encoding}" deprecation="@{debug}">
+					<classpath>
+						<path refid="@{classpathref}" />
+						<pathelement location="${dir.lib.ant}/scala/scala-library.jar" />
+					</classpath>
+				</scalac>
+			</sequential>
+		</macrodef>
+	</target>
+
+	<patternset id="pattern.libraries">
+		<include name="**/*.jar" />
+		<include name="**/*.zip" />
+	</patternset>
+
+	<path id="classpath.lib.ant">
+		<fileset dir="${dir.lib.ant}">
+			<patternset refid="pattern.libraries" />
+		</fileset>
+	</path>
+
+	<path id="classpath.compile.std">
+		<path refid="classpath.lib.std" />
+	</path>
+
+	<path id="classpath.lib.std">
+		<fileset dir="${dir.lib.std}">
+			<patternset refid="pattern.libraries" />
+		</fileset>
+	</path>
+
+	<target name="taskdef.scala">
+		<taskdef classpathref="classpath.lib.ant" resource="scala/tools/ant/antlib.xml" />
+	</target>
+
+	<target name="dist" description="dist" depends="compile, create.fileset.extra.jar, create.fileset.extra.web, create.fileset.extra.war, create.fileset.inc.jar, create.fileset.inc.web">
+		<echo message="Distribution..."/>
+		<mkdir dir="${dir.dist}" />
+		<mkdir dir="${dir.flatlibs}" />
+		<echo message="Copy libs into ${dir.flatlibs}."/>
+		<copy todir="${dir.flatlibs}">
+			<fileset dir="${dir.lib.std}" includes="**/*.jar" />
+			<mapper type="flatten" />
+		</copy>
+		<delete file="${file.webdist}" />
+		<echo message="Create war file ${file.webdist}."/>
+		<war destfile="${file.webdist}" webxml="${file.webxml}" duplicate="preserve">
+			<lib dir="${dir.flatlibs}" includes="*.jar" />
+			<classes dir="${dir.build.std}" includes="**/*.class" />
+			<classes refid="fileset.extra.jar" />
+			<classes refid="fileset.inc.jar" />
+			<fileset refid="fileset.inc.web" />
+			<fileset refid="fileset.extra.web" />
+			<fileset refid="fileset.extra.war" />
+		</war>
+	</target>
+
+	<target name="create.fileset.extra.jar" depends="exist.fileset.extra.jar" unless="exist.fileset.extra.jar">
+		<echo message="Create ${fileset.extra.jar}"/>
+		<fileset id="fileset.extra.jar" file=""/>
+	</target>
+
+	<target name="create.fileset.extra.web" depends="exist.fileset.extra.web" unless="exist.fileset.extra.web">
+		<fileset id="fileset.extra.web" file=""/>
+	</target>
+
+	<target name="create.fileset.extra.war" depends="exist.fileset.extra.war" unless="exist.fileset.extra.war">
+		<fileset id="fileset.extra.war" file=""/>
+	</target>
+
+	<target name="create.fileset.inc.jar" depends="exist.inc.jar, create.fileset.inc.jar.fallback" if="exist.inc.jar">
+		<fileset id="fileset.inc.jar" dir="${dir.inc.jar}"/>
+	</target>
+	
+	<target name="create.fileset.inc.jar.fallback" depends="exist.inc.jar" unless="exist.inc.jar">
+		<fileset id="fileset.inc.jar" file=""/>
+	</target>
+
+	<target name="create.fileset.inc.web" depends="exist.inc.web, create.fileset.inc.web.fallback" if="exist.inc.web">
+		<fileset id="fileset.inc.web" dir="${dir.inc.web}"/>
+	</target>
+	
+	<target name="create.fileset.inc.web.fallback" depends="exist.inc.web" unless="exist.inc.web">
+		<fileset id="fileset.inc.web" file=""/>
+	</target>
+
+	<target name="exist.fileset.extra.jar">
+		<condition property="exist.fileset.extra.jar">
+			<isreference refid="fileset.extra.jar" type="fileset"/>
+		</condition>
+	</target>
+
+	<target name="exist.fileset.extra.dist">
+		<condition property="exist.fileset.extra.dist">
+			<isreference refid="fileset.extra.dist" type="fileset"/>
+		</condition>
+	</target>
+
+	<target name="exist.fileset.extra.web">
+		<condition property="exist.fileset.extra.web">
+			<isreference refid="fileset.extra.web" type="fileset"/>
+		</condition>
+	</target>
+
+	<target name="exist.fileset.extra.war">
+		<condition property="exist.fileset.extra.war">
+			<isreference refid="fileset.extra.war" type="fileset"/>
+		</condition>
+	</target>
+	
+	<target name="exist.inc.web">
+		<available property="exist.inc.web" file="${dir.inc.web}" type="dir"/>
+	</target>
+	
+	<target name="exist.inc.jar">
+		<available property="exist.inc.jar" file="${dir.inc.jar}" type="dir"/>
+	</target>
+
+	<target name="exist.inc.dist">
+		<available property="exist.inc.dist" file="${dir.inc.dist}" type="dir"/>
+	</target>
+
+</project>
