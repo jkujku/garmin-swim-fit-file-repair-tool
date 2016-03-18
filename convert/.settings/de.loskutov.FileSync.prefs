@@ -1,0 +1,8 @@
+WARNING=DO NOT MODIFY THIS FILE IF YOU DON'T UNDERSTAND
+defaultDestination=C\:/xampp/tomcat/webapps/fitcsvconverter/WEB-INF/classes
+defaultVariables=
+eclipse.preferences.version=1
+includeTeamPrivateFiles=false
+map|0=bin|,|,|,|,
+map|1=generated/dist|C\:/xampp/tomcat/webapps|fitcsvconverter.war|,|,
+useCurrentDateForDestinationFiles=false

@@ -4,6 +4,15 @@
 
 	<display-name>FitCSVConverter</display-name>
 	<description></description>
+
+	<servlet>
+		<servlet-name>test</servlet-name>
+		<servlet-class>servlet.TestServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>test</servlet-name>
+		<url-pattern>/test</url-pattern>
+	</servlet-mapping>
 	
 	<servlet>
 		<servlet-name>fittocsv</servlet-name>
