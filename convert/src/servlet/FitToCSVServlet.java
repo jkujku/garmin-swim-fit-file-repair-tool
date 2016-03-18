@@ -26,15 +26,13 @@ public class FitToCSVServlet extends HttpServlet {
 	private static final long serialVersionUID = -8411169728084686143L;
 
      
-    /**
-     * handles file upload
-     */
-    protected void doPost(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-        // gets absolute path of the web application
+	public void processRequest(HttpServletRequest request, HttpServletResponse response){
+		// gets absolute path of the web application
         String appPath = request.getServletContext().getRealPath("");
         // constructs path of the directory to save uploaded file
         String savePath = appPath + File.separator + SAVE_DIR;
+        // Message
+        String result = "";
          
         // creates the save directory if it does not exists
         File fileSaveDir = new File(savePath);
@@ -42,15 +40,49 @@ public class FitToCSVServlet extends HttpServlet {
             fileSaveDir.mkdir();
         }
          
-        for (Part part : request.getParts()) {
-            String fileName = extractFileName(part);
-            part.write(savePath + File.separator + fileName);
-        }
+        try {
+			for (Part part : request.getParts()) {
+			    String fileName = extractFileName(part);
+			    if(fileName != null && !fileName.isEmpty()){
+			    	String uniqueFileName = generateUniqueFileName(fileName);
+			    	part.write(savePath + File.separator + uniqueFileName);
+			    	result += " Uploaded: " + uniqueFileName;
+			    }else{
+			    	result += " Not uploaded";
+			    }
+			}
+		} catch (ServletException e) {
+			result = e.getMessage();
+			e.printStackTrace();
+		} catch (IOException e) {
+			result = e.getMessage();
+			e.printStackTrace();
+		}
 
-		String result = "Uploaded.";
+        response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/plain");
+		try {
+			response.getWriter().write(result);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void doGet(HttpServletRequest request, HttpServletResponse response){
+		String result = "GET requests not supported.";
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/plain");
-		response.getWriter().write(result);
+		try {
+			response.getWriter().write(result);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response){
+    	processRequest(request, response);
     }
  
     /**
@@ -65,5 +97,10 @@ public class FitToCSVServlet extends HttpServlet {
             }
         }
         return "";
-    }
+	}
+
+	private String generateUniqueFileName(String originalFilename) {
+		return System.currentTimeMillis() + "-" + originalFilename;
+	}
+    
 }
